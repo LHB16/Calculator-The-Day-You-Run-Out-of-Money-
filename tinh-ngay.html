@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tính Ngày Hết Tiền (Nâng cấp)</title>
+    <title>Tính Ngày Hết Tiền</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -25,6 +25,17 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             border-top: 5px solid #007bff;
         }
+        
+        /* === STYLE CHO ĐỒNG HỒ === */
+        #clock-container {
+            text-align: center;
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        /* ========================== */
+
         h1 {
             text-align: center;
             color: #007bff;
@@ -39,23 +50,20 @@
             font-weight: 600;
             color: #555;
         }
-        /* Áp dụng style cho cả select và input */
         .input-group input,
         .input-group select {
             width: 100%;
             padding: 12px;
-            box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
+            box-sizing: border-box; 
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
-            background-color: #fff; /* Đảm bảo select có nền trắng trên mọi trình duyệt */
+            background-color: #fff;
         }
-        /* Style cho ô "Khác" bị ẩn ban đầu */
         .input-khac {
             display: none;
             margin-top: 10px;
         }
-        
         .result {
             margin-top: 25px;
             padding: 20px;
@@ -80,6 +88,10 @@
 <body>
 
     <div class="container">
+        
+        <div id="clock-container">
+            <span id="clock"></span>
+        </div>
         <h1>Máy tính "Ngày Hết Tiền"</h1>
 
         <div class="input-group">
@@ -114,19 +126,44 @@
     </div>
 
     <script>
-        // Lấy các phần tử DOM
+        // === JAVASCRIPT CHO ĐỒNG HỒ ===
+        const elClock = document.getElementById('clock');
+
+        function capNhatDongHo() {
+            const now = new Date();
+            const options = {
+                weekday: 'long', // ví dụ: 'Thứ Năm'
+                day: '2-digit',    
+                month: '2-digit',  
+                year: 'numeric',   
+                hour: '2-digit',   
+                minute: '2-digit', 
+                second: '2-digit', 
+            };
+            // Định dạng theo kiểu "Thứ Năm, 06/11/2025, 07:41:32"
+            // .replace để thay dấu phẩy đầu tiên thành ", " cho đẹp hơn
+            const thoiGianHienTai = now.toLocaleString('vi-VN', options).replace(',', ', ');
+            
+            elClock.textContent = thoiGianHienTai;
+        }
+
+        // Cập nhật đồng hồ mỗi giây (1000ms = 1 giây)
+        setInterval(capNhatDongHo, 1000);
+        
+        // Chạy ngay lần đầu tiên khi tải trang (để không bị trễ 1 giây)
+        capNhatDongHo();
+        // ==============================
+
+
+        // === JAVASCRIPT CHO MÁY TÍNH (code cũ) ===
         const selectTongTien = document.getElementById('selectTongTien');
         const inputTongTienKhac = document.getElementById('inputTongTienKhac');
-        
         const selectChiTieu = document.getElementById('selectChiTieu');
         const inputChiTieuKhac = document.getElementById('inputChiTieuKhac');
-        
         const elNgayHetTien = document.getElementById('ngayHetTien');
         const elThongBao = document.getElementById('thongBao');
 
-        // Hàm tính toán và cập nhật
         function tinhToanNgay() {
-            // 1. Lấy giá trị tổng tiền
             let tongTienValue = selectTongTien.value;
             let tongTien;
             if (tongTienValue === 'khac') {
@@ -135,7 +172,6 @@
                 tongTien = parseFloat(tongTienValue);
             }
 
-            // 2. Lấy giá trị chi tiêu
             let chiTieuValue = selectChiTieu.value;
             let chiTieuMoiNgay;
             if (chiTieuValue === 'khac') {
@@ -144,7 +180,6 @@
                 chiTieuMoiNgay = parseFloat(chiTieuValue);
             }
 
-            // 3. Kiểm tra và tính toán
             if (isNaN(tongTien) || isNaN(chiTieuMoiNgay) || tongTien <= 0 || chiTieuMoiNgay <= 0) {
                 elThongBao.textContent = "Bạn sẽ tiêu hết số tiền này vào ngày:";
                 elNgayHetTien.textContent = "Vui lòng chọn/nhập số tiền";
@@ -163,22 +198,18 @@
             elNgayHetTien.textContent = ngayDinhDang;
         }
 
-        // --- Gắn các sự kiện ---
-
-        // 1. Sự kiện cho Tổng Tiền
         selectTongTien.addEventListener('change', function() {
             if (this.value === 'khac') {
-                inputTongTienKhac.style.display = 'block'; // Hiện ô "Khác"
+                inputTongTienKhac.style.display = 'block';
                 inputTongTienKhac.focus();
             } else {
-                inputTongTienKhac.style.display = 'none'; // Ẩn ô "Khác"
-                inputTongTienKhac.value = ''; // Xóa giá trị ô "Khác"
+                inputTongTienKhac.style.display = 'none';
+                inputTongTienKhac.value = '';
             }
-            tinhToanNgay(); // Tính toán lại
+            tinhToanNgay();
         });
-        inputTongTienKhac.addEventListener('input', tinhToanNgay); // Tính toán khi gõ vào ô "Khác"
+        inputTongTienKhac.addEventListener('input', tinhToanNgay);
 
-        // 2. Sự kiện cho Chi Tiêu
         selectChiTieu.addEventListener('change', function() {
             if (this.value === 'khac') {
                 inputChiTieuKhac.style.display = 'block';
