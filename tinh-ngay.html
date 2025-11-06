@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Ngày Hết Tiền (Nâng cấp)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #007bff;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        /* Áp dụng style cho cả select và input */
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: #fff; /* Đảm bảo select có nền trắng trên mọi trình duyệt */
+        }
+        /* Style cho ô "Khác" bị ẩn ban đầu */
+        .input-khac {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e6f7ff;
+            border: 1px solid #b3e0ff;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .result p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .result #ngayHetTien {
+            color: #d90429;
+            font-size: 1.3rem;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Máy tính "Ngày Hết Tiền"</h1>
+
+        <div class="input-group">
+            <label for="selectTongTien">Bạn có tổng cộng bao nhiêu tiền?</label>
+            <select id="selectTongTien">
+                <option value="" selected disabled>--- Chọn tổng tiền ---</option>
+                <option value="1000000">1,000,000</option>
+                <option value="1500000">1,500,000</option>
+                <option value="2000000">2,000,000</option>
+                <option value="khac">Khác...</option>
+            </select>
+            <input type="number" id="inputTongTienKhac" class="input-khac" placeholder="Nhập số tiền khác" min="0">
+        </div>
+
+        <div class="input-group">
+            <label for="selectChiTieu">Bạn tiêu bao nhiêu mỗi ngày?</label>
+            <select id="selectChiTieu">
+                <option value="" selected disabled>--- Chọn mức tiêu ---</option>
+                <option value="50000">50,000</option>
+                <option value="75000">75,000</option>
+                <option value="100000">100,000</option>
+                <option value="125000">125,000</option>
+                <option value="khac">Khác...</option>
+            </select>
+            <input type="number" id="inputChiTieuKhac" class="input-khac" placeholder="Nhập số tiền khác" min="1">
+        </div>
+
+        <div class="result">
+            <p id="thongBao">Bạn sẽ tiêu hết số tiền này vào ngày:</p>
+            <span id="ngayHetTien">...</span>
+        </div>
+    </div>
+
+    <script>
+        // Lấy các phần tử DOM
+        const selectTongTien = document.getElementById('selectTongTien');
+        const inputTongTienKhac = document.getElementById('inputTongTienKhac');
+        
+        const selectChiTieu = document.getElementById('selectChiTieu');
+        const inputChiTieuKhac = document.getElementById('inputChiTieuKhac');
+        
+        const elNgayHetTien = document.getElementById('ngayHetTien');
+        const elThongBao = document.getElementById('thongBao');
+
+        // Hàm tính toán và cập nhật
+        function tinhToanNgay() {
+            // 1. Lấy giá trị tổng tiền
+            let tongTienValue = selectTongTien.value;
+            let tongTien;
+            if (tongTienValue === 'khac') {
+                tongTien = parseFloat(inputTongTienKhac.value);
+            } else {
+                tongTien = parseFloat(tongTienValue);
+            }
+
+            // 2. Lấy giá trị chi tiêu
+            let chiTieuValue = selectChiTieu.value;
+            let chiTieuMoiNgay;
+            if (chiTieuValue === 'khac') {
+                chiTieuMoiNgay = parseFloat(inputChiTieuKhac.value);
+            } else {
+                chiTieuMoiNgay = parseFloat(chiTieuValue);
+            }
+
+            // 3. Kiểm tra và tính toán
+            if (isNaN(tongTien) || isNaN(chiTieuMoiNgay) || tongTien <= 0 || chiTieuMoiNgay <= 0) {
+                elThongBao.textContent = "Bạn sẽ tiêu hết số tiền này vào ngày:";
+                elNgayHetTien.textContent = "Vui lòng chọn/nhập số tiền";
+                return;
+            }
+
+            const soNgayCoTheTieu = Math.ceil(tongTien / chiTieuMoiNgay);
+            const homNay = new Date();
+            const ngayHetTien = new Date(homNay);
+            ngayHetTien.setDate(homNay.getDate() + soNgayCoTheTieu - 1);
+
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            const ngayDinhDang = ngayHetTien.toLocaleDateString('vi-VN', options);
+
+            elThongBao.textContent = `Với ${soNgayCoTheTieu} ngày chi tiêu, bạn sẽ hết tiền vào:`;
+            elNgayHetTien.textContent = ngayDinhDang;
+        }
+
+        // --- Gắn các sự kiện ---
+
+        // 1. Sự kiện cho Tổng Tiền
+        selectTongTien.addEventListener('change', function() {
+            if (this.value === 'khac') {
+                inputTongTienKhac.style.display = 'block'; // Hiện ô "Khác"
+                inputTongTienKhac.focus();
+            } else {
+                inputTongTienKhac.style.display = 'none'; // Ẩn ô "Khác"
+                inputTongTienKhac.value = ''; // Xóa giá trị ô "Khác"
+            }
+            tinhToanNgay(); // Tính toán lại
+        });
+        inputTongTienKhac.addEventListener('input', tinhToanNgay); // Tính toán khi gõ vào ô "Khác"
+
+        // 2. Sự kiện cho Chi Tiêu
+        selectChiTieu.addEventListener('change', function() {
+            if (this.value === 'khac') {
+                inputChiTieuKhac.style.display = 'block';
+                inputChiTieuKhac.focus();
+            } else {
+                inputChiTieuKhac.style.display = 'none';
+                inputChiTieuKhac.value = '';
+            }
+            tinhToanNgay();
+        });
+        inputChiTieuKhac.addEventListener('input', tinhToanNgay);
+
+    </script>
+
+</body>
+</html>
